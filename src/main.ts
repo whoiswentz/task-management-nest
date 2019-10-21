@@ -3,9 +3,7 @@ import { AppModule } from './app.module';
 import { INestApplication } from '@nestjs/common';
 
 async function bootstrap(): Promise<INestApplication> {
-  return await NestFactory.create(AppModule, {
-    logger: ['log'],
-  });
+  return await NestFactory.create(AppModule);
 }
 
 bootstrap().then(app => {

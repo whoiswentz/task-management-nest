@@ -2,6 +2,11 @@ import { Repository, EntityRepository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { AuthCredentialsDto } from '../dto/auth-credentials.dto';
 import { UserBuilder } from '../user.builder';
+import { ConflictException, InternalServerErrorException } from '@nestjs/common';
+
+export enum DatabaseError {
+  UNIQUE_VIOLATION = '23505',
+}
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -13,6 +18,14 @@ export class UserRepository extends Repository<User> {
       .setUsername(username)
       .setPassword(password)
       .build();
-    await user.save();
+
+    try {
+      await user.save();
+    } catch (error) {
+      if (error.code === DatabaseError.UNIQUE_VIOLATION) {
+        throw new ConflictException('Username already existis');
+      }
+      throw new InternalServerErrorException();
+    }
   }
 }
