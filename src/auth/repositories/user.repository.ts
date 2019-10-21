@@ -3,6 +3,7 @@ import { User } from '../entities/user.entity';
 import { AuthCredentialsDto } from '../dto/auth-credentials.dto';
 import { UserBuilder } from '../user.builder';
 import { ConflictException, InternalServerErrorException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 export enum DatabaseError {
   UNIQUE_VIOLATION = '23505',
@@ -14,9 +15,13 @@ export class UserRepository extends Repository<User> {
     const username: string = credentialsDto.username;
     const password: string = credentialsDto.password;
 
+    const salt: string = await bcrypt.genSalt();
+    const hashedPassword: string = await this.hashPassword(password, salt);
+
     const user: User = new UserBuilder()
       .setUsername(username)
-      .setPassword(password)
+      .setSalt(salt)
+      .setPassword(hashedPassword)
       .build();
 
     try {
@@ -27,5 +32,9 @@ export class UserRepository extends Repository<User> {
       }
       throw new InternalServerErrorException();
     }
+  }
+
+  private async hashPassword(password: string, salt: string): Promise<string> {
+    return bcrypt.hash(password, salt);
   }
 }
