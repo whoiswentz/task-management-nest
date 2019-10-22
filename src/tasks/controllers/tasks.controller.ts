@@ -7,6 +7,8 @@ import { TaskStatusValidationPipe } from '../pipes/task-status-validation.pipe';
 import { TaskStatus } from '../enums/task-status.enum';
 import { GetTasksFilterDto } from '../dto/get-tasks-filter.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { GetUser } from '../../auth/get-user.decorator';
+import { User } from '../../auth/entities/user.entity';
 
 @Controller('tasks')
 @UseGuards(AuthGuard())
@@ -14,29 +16,29 @@ export class TasksController {
   constructor(private tasksServices: TasksService) { }
 
   @Get()
-  public getTasks(@Query(TaskStatusValidationPipe) filterDto: GetTasksFilterDto): Promise<Task[]> {
-    return this.tasksServices.getTaks(filterDto);
+  public getTasks(@Query(TaskStatusValidationPipe) filterDto: GetTasksFilterDto, @GetUser() user: User): Promise<Task[]> {
+    return this.tasksServices.getTaks(filterDto, user);
   }
 
   @Get('/:id')
-  public getTaskById(@Param('id', ParseIntPipe) id: number): Promise<Task> {
-    return this.tasksServices.getTaskById(id);
+  public getTaskById(@Param('id', ParseIntPipe) id: number, @GetUser() user: User): Promise<Task> {
+    return this.tasksServices.getTaskById(id, user);
   }
 
   @Post()
   @UsePipes(ValidationPipe)
-  public createTask(@Body() createTaskDto: CreateTaskDto): Promise<Task> {
-    return this.tasksServices.createTask(createTaskDto);
+  public createTask(@Body() createTaskDto: CreateTaskDto, @GetUser() user: User): Promise<Task> {
+    return this.tasksServices.createTask(createTaskDto, user);
   }
 
   @Patch('/:id/status')
   @UsePipes(TaskStatusValidationPipe)
-  public updateTask(@Param('id', ParseIntPipe) id: number, @Body('status') status: TaskStatus): Promise<UpdateResult> {
-    return this.tasksServices.updateTaskStatus(id, status);
+  public updateTask(@Param('id', ParseIntPipe) id: number, @Body('status') status: TaskStatus, @GetUser() user: User): Promise<UpdateResult> {
+    return this.tasksServices.updateTaskStatus(id, status, user);
   }
 
   @Delete('/:id')
-  public deleteTaskById(@Param('id', ParseIntPipe) id: number): Promise<DeleteResult> {
-    return this.tasksServices.deleteTaskById(id);
+  public deleteTaskById(@Param('id', ParseIntPipe) id: number, @GetUser() user: User): Promise<DeleteResult> {
+    return this.tasksServices.deleteTaskById(id, user);
   }
 }
