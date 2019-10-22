@@ -5,7 +5,7 @@ import { AuthService } from '../services/auth.service';
 @Controller('auth')
 export class AuthController {
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('/signup')
   public async signUp(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<void> {
@@ -13,7 +13,7 @@ export class AuthController {
   }
 
   @Post('/signin')
-  public async signIn(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<string> {
+  public async signIn(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string }> {
     return this.authService.signIn(authCredentialsDto);
   }
 }
