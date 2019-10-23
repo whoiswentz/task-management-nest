@@ -1,4 +1,4 @@
-import { Repository, EntityRepository, QueryBuilder, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult, DeleteResult } from 'typeorm';
+import { Repository, EntityRepository, QueryBuilder, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult, DeleteResult, Like } from 'typeorm';
 import { Task } from '../entities/task.entity';
 import { CreateTaskDto } from '../dto/create-task.dto';
 import { TaskStatus } from '../enums/task-status.enum';
@@ -16,8 +16,14 @@ export class TaskRespository extends Repository<Task> {
     const status: string = filterDto.status;
     const search: string = filterDto.search;
 
-    const query: SelectQueryBuilder<Task> = this.createQueryBuilder();
-    query.where('"userId" = :userId', { userId: user.id });
+    const offset: number = filterDto.offset;
+    const limit: number = filterDto.limit;
+
+    const query: SelectQueryBuilder<Task> = this.createQueryBuilder()
+      .where({ userId: user.id })
+      .skip(offset)
+      .limit(limit);
+
     if (status) { query.andWhere('status = :status', { status: status }); }
     if (search) { query.andWhere('(title LIKE :search OR description LIKE :search)', { search: `%${search}%` }); }
 
