@@ -3,16 +3,18 @@ import { UserRepository } from '../repositories/user.repository';
 import { AuthCredentialsDto } from '../dto/auth-credentials.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../models/jwt-payload.model';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
+  private logger: Logger;
 
-  constructor(
-    private userRepository: UserRepository,
-    private jwtService: JwtService,
-  ) { }
+  constructor(private userRepository: UserRepository, private jwtService: JwtService) {
+    this.logger = new Logger('AuthService');
+  }
 
   public async signUp(credentialsDto: AuthCredentialsDto): Promise<void> {
+    this.logger.verbose(`SigningUp a new user`);
     return this.userRepository.signUp(credentialsDto);
   }
 
