@@ -5,10 +5,12 @@ import { TaskStatus } from '../enums/task-status.enum';
 import { TaskBuilder } from '../task.builder';
 import { GetTasksFilterDto } from '../dto/get-tasks-filter.dto';
 import { User } from '../../auth/entities/user.entity';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, Logger, InternalServerErrorException } from '@nestjs/common';
 
 @EntityRepository(Task)
 export class TaskRespository extends Repository<Task> {
+
+  private logger: Logger = new Logger('TaskRespository');
 
   public async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
     const status: string = filterDto.status;
@@ -18,41 +20,46 @@ export class TaskRespository extends Repository<Task> {
     query.where('"userId" = :userId', { userId: user.id });
     if (status) { query.andWhere('status = :status', { status: status }); }
     if (search) { query.andWhere('(title LIKE :search OR description LIKE :search)', { search: `%${search}%` }); }
-    const tasks: Task[] = await query.getMany();
 
-    return tasks;
+    try {
+      return await query.getMany();
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      throw new InternalServerErrorException();
+    }
   }
 
   public async createTask(createTaskDto: CreateTaskDto, user: User): Promise<Task> {
     const title: string = createTaskDto.title;
     const description: string = createTaskDto.description;
 
-    const savedTask: Task = await new TaskBuilder()
-      .setTitle(title).setDescription(description)
-      .setStatus(TaskStatus.OPEN).setUser(user)
-      .build().save();
+    const task: Task = new TaskBuilder()
+      .setDescription(description)
+      .setStatus(TaskStatus.OPEN)
+      .setTitle(title)
+      .setUser(user)
+      .build();
 
-    delete savedTask.user;
+    try {
+      await task.save()
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      throw new InternalServerErrorException()
+    }
 
-    return savedTask;
+    delete task.user;
+    return task;
   }
 
   public async updateTaskStatus(id: number, status: TaskStatus, user: User): Promise<UpdateResult> {
     const updatedTaskResult: UpdateResult = await this.update({ id: id, userId: user.id }, { status: status });
-
-    if (!updatedTaskResult.affected) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
+    if (!updatedTaskResult.affected) { throw new NotFoundException(`Task with id ${id} not found`); }
     return updatedTaskResult;
   }
 
   public async deleteTaskById(id: number, user: User): Promise<DeleteResult> {
     const deleteTaskResult: DeleteResult = await this.delete({ id: id, userId: user.id });
-
-    if (!deleteTaskResult.affected) {
-      throw new NotFoundException(`Task with id ${id} not found`);
-    }
-
+    if (!deleteTaskResult.affected) { throw new NotFoundException(`Task with id ${id} not found`); }
     return deleteTaskResult;
   }
 }
