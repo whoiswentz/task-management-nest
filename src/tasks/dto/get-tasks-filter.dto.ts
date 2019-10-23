@@ -8,4 +8,10 @@ export class GetTasksFilterDto {
   @IsOptional()
   @IsNotEmpty()
   search: string;
+
+  @IsOptional()
+  offset: number;
+
+  @IsOptional()
+  limit: number;
 }
