@@ -1,4 +1,20 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch, Query, UsePipes, ValidationPipe, ParseIntPipe, UseGuards, Logger, UseInterceptors, CacheInterceptor } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Patch,
+  Query,
+  UsePipes,
+  ValidationPipe,
+  ParseIntPipe,
+  UseGuards,
+  Logger,
+  UseInterceptors,
+  CacheInterceptor,
+} from '@nestjs/common';
 import { TasksService } from '../services/tasks.service';
 import { Task } from '../entities/task.entity';
 import { CreateTaskDto } from '../dto/create-task.dto';
@@ -21,7 +37,7 @@ export class TasksController {
   @UseInterceptors(CacheInterceptor)
   public getTasks(@Query(TaskStatusValidationPipe) filterDto: GetTasksFilterDto, @GetUser() user: User): Promise<Task[]> {
     this.logger.verbose(`User ${user.username} retrieving all tasks`);
-    return this.tasksServices.getTaks(filterDto, user);
+    return this.tasksServices.getTasks(filterDto, user);
   }
 
   @Get('/:id')

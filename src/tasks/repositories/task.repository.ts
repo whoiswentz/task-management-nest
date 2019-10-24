@@ -47,10 +47,10 @@ export class TaskRespository extends Repository<Task> {
       .build();
 
     try {
-      await task.save()
+      await task.save();
     } catch (error) {
       this.logger.error(error.message, error.stack);
-      throw new InternalServerErrorException()
+      throw new InternalServerErrorException();
     }
 
     delete task.user;

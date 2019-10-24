@@ -3,15 +3,15 @@ import { TaskStatus } from '../enums/task-status.enum';
 
 export class GetTasksFilterDto {
   @IsOptional()
-  status: TaskStatus;
+  status?: TaskStatus;
 
   @IsOptional()
   @IsNotEmpty()
-  search: string;
+  search?: string;
 
   @IsOptional()
-  offset: number;
+  offset?: number;
 
   @IsOptional()
-  limit: number;
+  limit?: number;
 }
