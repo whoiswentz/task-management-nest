@@ -4,7 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { UserRepository } from '../repositories/user.repository';
 import { MockUserRepository } from '../services/auth.service.spec';
 
-describe('Auth Controller', () => {
+xdescribe('Auth Controller', () => {
   let controller: AuthController;
 
   beforeEach(async () => {
