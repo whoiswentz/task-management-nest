@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TasksService } from '../services/tasks.service';
 import { TasksController } from './tasks.controller';
-import { TaskRespository } from '../task.repository';
+import { TaskRespository } from '../repositories/task.repository';
 
 xdescribe('Tasks Controller', () => {
   let controller: TasksController;
