@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TasksService } from './tasks.service';
-import { TaskRespository } from '../task.repository';
+import { TaskRespository } from '../repositories/task.repository';
 import { TaskBuilder } from '../task.builder';
 import { TaskStatus } from '../enums/task-status.enum';
 import { Task } from '../entities/task.entity';
