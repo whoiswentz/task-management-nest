@@ -7,10 +7,7 @@ xdescribe('AuthService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService, {
-        provide: UserRepository,
-        useClass: MockUserRepository,
-      }],
+      providers: [AuthService],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
@@ -20,7 +17,3 @@ xdescribe('AuthService', () => {
     expect(service).toBeDefined();
   });
 });
-
-export class MockUserRepository {
-
-}
