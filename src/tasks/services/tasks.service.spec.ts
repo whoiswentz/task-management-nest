@@ -1,24 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TasksService } from './tasks.service';
-import { TaskRespository } from '../repositories/task.repository';
+import { TaskRespository } from '../task.repository';
 import { TaskBuilder } from '../task.builder';
 import { TaskStatus } from '../enums/task-status.enum';
 import { Task } from '../entities/task.entity';
 import { GetTasksFilterDto } from '../dto/get-tasks-filter.dto';
 import { User } from '../../auth/entities/user.entity';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { CreateTaskDto } from '../dto/create-task.dto';
+import { UpdateResult, DeleteResult } from 'typeorm';
 
-const mockedUser = {
-  id: 1,
-  username: 'aaaa',
-  password: 'aaaaa',
-  salt: 'aaaaaa',
-  tasks: [],
-} as User;
+const mockedUser = { id: 1, username: 'a', password: 'a', salt: 'a', tasks: [] } as User;
 
-export const mockTaskRespository = () => ({
+export const mockTaskRespository = jest.fn(() => ({
   getTasks: jest.fn().mockResolvedValue([
     new TaskBuilder().setTitle('Study NestJs').setDescription('10').setStatus(TaskStatus.OPEN).setUser(mockedUser).build(),
     new TaskBuilder().setTitle('Study Clojure').setDescription('11').setStatus(TaskStatus.OPEN).setUser(mockedUser).build(),
@@ -31,8 +25,17 @@ export const mockTaskRespository = () => ({
     .mockResolvedValueOnce(null),
 
   createTask: jest.fn()
-    .mockResolvedValueOnce(new TaskBuilder().setTitle('Study NestJs').setDescription('10').setStatus(TaskStatus.OPEN).setUser(mockedUser).build()),
-});
+    .mockResolvedValueOnce(
+      new TaskBuilder().setTitle('Study NestJs').setDescription('10').setStatus(TaskStatus.OPEN).setUser(mockedUser).build()),
+
+  updateTaskStatus: jest.fn()
+    .mockResolvedValueOnce({ affected: 1 })
+    .mockResolvedValueOnce({ affected: 0 }),
+
+  deleteTaskById: jest.fn()
+    .mockResolvedValueOnce({ affected: 1 })
+    .mockResolvedValueOnce({ affected: 0 }),
+}));
 
 describe('TasksService', () => {
   let taskService: TasksService;
@@ -48,6 +51,10 @@ describe('TasksService', () => {
 
     taskService = module.get<TasksService>(TasksService);
     taskRespository = module.get<TaskRespository>(TaskRespository);
+  });
+
+  beforeAll(() => {
+    mockTaskRespository.mockClear();
   });
 
   it('should be defined', () => {
@@ -115,6 +122,67 @@ describe('TasksService', () => {
         expect(task).toBeInstanceOf(Task);
       } catch (error) {
         expect(error).toBeUndefined();
+      }
+    });
+
+    it('should throw error when create task fails', async () => {
+      jest.spyOn(Task, 'save').mockRejectedValue(new Error());
+
+      const createDto: CreateTaskDto = { title: 'Study NestJs', description: '10' };
+      try {
+        const task: Task = await taskService.createTask(createDto, mockedUser);
+
+        expect(taskRespository.createTask).toBeCalledWith({ createDto: createDto, mockedUser: mockedUser });
+        expect(taskService.createTask).toThrow(InternalServerErrorException);
+        expect(task).toBeUndefined();
+      } catch (error) {
+        expect(error).toBeDefined();
+      }
+    });
+  });
+
+  describe('updateTaskStatus', () => {
+    it('should update task status', async () => {
+      try {
+        const updateResult: UpdateResult = await taskService.updateTaskStatus(1, TaskStatus.IN_PROGRESS, mockedUser);
+        expect(taskRespository.updateTaskStatus).toBeCalledWith(1, TaskStatus.IN_PROGRESS, mockedUser);
+        expect(updateResult.affected).toBe(1);
+      } catch (error) {
+        expect(error).toBeUndefined();
+      }
+    });
+
+    it('should throw NotFoundException when try to update a task that was not found', async () => {
+      try {
+        const updateResult: UpdateResult = await taskService.updateTaskStatus(1, TaskStatus.IN_PROGRESS, mockedUser);
+        expect(taskRespository.updateTaskStatus).toBeCalledWith(1, TaskStatus.IN_PROGRESS, mockedUser);
+        expect(taskRespository.updateTaskStatus).toThrow(NotFoundException);
+        expect(updateResult.affected).toBe(0);
+      } catch (error) {
+        expect(error).toBeDefined();
+      }
+    });
+  });
+
+  describe('deleteTaskById', () => {
+    it('should delete a task', async () => {
+      try {
+        const deleteResult: DeleteResult = await taskService.deleteTaskById(1, mockedUser);
+        expect(taskRespository.deleteTaskById).toBeCalledWith(1, mockedUser);
+        expect(deleteResult.affected).toBe(1);
+      } catch (error) {
+        expect(error).toBeUndefined();
+      }
+    });
+
+    it('should throw NotFoundException when try to delete a task that was not found', async () => {
+      try {
+        const deleteResult: DeleteResult = await taskService.deleteTaskById(1, mockedUser);
+        expect(taskRespository.deleteTaskById).toBeCalledWith(1, mockedUser);
+        expect(taskRespository.deleteTaskById).toThrow(NotFoundException);
+        expect(deleteResult.affected).toBe(0);
+      } catch (error) {
+        expect(error).toBeDefined();
       }
     });
   });

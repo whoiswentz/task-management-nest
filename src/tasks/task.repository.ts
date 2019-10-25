@@ -1,10 +1,10 @@
-import { Repository, EntityRepository, QueryBuilder, SelectQueryBuilder, UpdateQueryBuilder, UpdateResult, DeleteResult, Like } from 'typeorm';
-import { Task } from '../entities/task.entity';
-import { CreateTaskDto } from '../dto/create-task.dto';
-import { TaskStatus } from '../enums/task-status.enum';
-import { TaskBuilder } from '../task.builder';
-import { GetTasksFilterDto } from '../dto/get-tasks-filter.dto';
-import { User } from '../../auth/entities/user.entity';
+import { Repository, EntityRepository, SelectQueryBuilder, UpdateResult, DeleteResult } from 'typeorm';
+import { Task } from './entities/task.entity';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { TaskStatus } from './enums/task-status.enum';
+import { TaskBuilder } from './task.builder';
+import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
+import { User } from '../auth/entities/user.entity';
 import { NotFoundException, Logger, InternalServerErrorException } from '@nestjs/common';
 
 @EntityRepository(Task)
